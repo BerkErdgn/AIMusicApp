@@ -24,3 +24,24 @@ export const Colors = {
     tabIconSelected: tintColorDark,
   },
 };
+
+
+export const SystemColors = {
+  // Primary Colors
+  primaryColor1: '#F76CC6',
+  primaryColor1_30: 'rgba(247, 108, 198, 0.3)',
+  primaryColor2: '#5426D7',
+  
+  // Linear Gradients (you'll need to use these with a gradient component)
+  linearGradient: ['#F76CC6', '#5426D7'],
+  linearGradient_30: ['rgba(247, 108, 198, 0.3)', 'rgba(84, 38, 215, 0.3)'],
+  
+  // System Colors
+  black: '#000000',
+  dark: '#231E27',
+  white: '#FFFFFF',
+  white_85: 'rgba(255, 255, 255, 0.85)',
+  white_70: 'rgba(255, 255, 255, 0.70)',
+  white_50: 'rgba(255, 255, 255, 0.50)',
+  gray: '#838283',
+}
