@@ -1,39 +1,41 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { View, SafeAreaView } from 'react-native';
+import { SystemColors } from '../constants/Colors';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+        <SafeAreaView style={{ flex: 1, backgroundColor: SystemColors.black }}>
+          <StatusBar style="light" translucent={false} backgroundColor="black" />
+          <Stack
+            screenOptions={{
+              contentStyle: {
+                backgroundColor: SystemColors.black,
+              },
+            }}
+          >
+            <Stack.Screen 
+              name="index" 
+              options={{ 
+                title: 'Create Music',
+                headerShown: false 
+              }} 
+            />
+            <Stack.Screen 
+              name="(music)/generating" 
+              options={{ 
+                title: 'Generating',
+                headerShown: false 
+              }} 
+            />
+            <Stack.Screen 
+              name="(music)/result" 
+              options={{ 
+                title: 'Your Music',
+                headerShown: false 
+              }} 
+            />
+          </Stack>
+        </SafeAreaView>
   );
 }

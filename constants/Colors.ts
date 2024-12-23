@@ -32,9 +32,9 @@ export const SystemColors = {
   primaryColor1_30: 'rgba(247, 108, 198, 0.3)',
   primaryColor2: '#5426D7',
   
-  // Linear Gradients (you'll need to use these with a gradient component)
-  linearGradient: ['#F76CC6', '#5426D7'],
-  linearGradient_30: ['rgba(247, 108, 198, 0.3)', 'rgba(84, 38, 215, 0.3)'],
+  // Linear Gradients
+  linearGradient: ['#F76CC6', '#5426D7'] as const,
+  linearGradient_30: ['rgba(247, 108, 198, 0.3)', 'rgba(84, 38, 215, 0.3)'] as const,
   
   // System Colors
   black: '#000000',
