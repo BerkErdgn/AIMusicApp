@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -95,14 +94,19 @@ export default function MusicGenerator() {
   };
 
   const handleContinue = () => {
-    if (!prompt) return;
+    if (!prompt || !selectedVoice) return;
     
+    const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
+    const encodedImageUrl = encodeURIComponent(selectedVoiceObject?.imageUrl || '');
+    
+
     router.push({
       pathname: "/generating",
       params: { 
         prompt,
         voice: selectedVoice,
-        category: selectedCategory !== 'All' ? selectedCategory : ''
+        category: selectedCategory !== 'All' ? selectedCategory : '',
+        imageUrl: encodedImageUrl
       }
     });
   };
@@ -207,13 +211,18 @@ export default function MusicGenerator() {
 
       <TouchableOpacity 
         onPress={handleContinue}
-        disabled={!prompt}
+        disabled={!prompt || !selectedVoice}
+        activeOpacity={0.95}
       >
         <LinearGradient
-          colors={!prompt ? ['#4A203B', '#4A203B'] : [...SystemColors.linearGradient] as const}
+          colors={(!prompt || !selectedVoice) ? ['#4A203B', '#4A203B'] : [...SystemColors.linearGradient] as const}
           style={styles.generateButton}
         >
-          <Text style={[styles.generateText, Typography.bodyBold]}>
+          <Text style={[
+            styles.generateText, 
+            Typography.bodyBold,
+            (!prompt || !selectedVoice) && { color: SystemColors.white_50 }
+          ]}>
             Continue
           </Text>
         </LinearGradient>
@@ -371,6 +380,7 @@ const styles = StyleSheet.create({
   },
   selectedVoiceItem: {
     borderWidth: 1,
+    borderRadius: 8,
     borderColor: '#F76CC6',
   },
   voiceSelectedOverlay: {

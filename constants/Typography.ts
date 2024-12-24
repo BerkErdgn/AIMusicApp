@@ -29,7 +29,7 @@ export const Typography = {
     fontWeight: '600', // Semibold
   },
   bodyRegular: {
-    fontSize: 17,
+    fontSize: 14,
     lineHeight: 22,
     letterSpacing: -0.4,
     fontWeight: '400', // Regular
