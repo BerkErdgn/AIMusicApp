@@ -6,6 +6,8 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { generateMusic } from '../../data/api/music';
+import { BlurView } from 'expo-blur';
+
 
 /**
  * Müzik oluşturma sayfası bileşeni
@@ -79,22 +81,31 @@ export default function GeneratingPage() {
 
       <View style={styles.content}>
         <View style={styles.animationContainer}>
-            <LinearGradient
-              colors={[
-                'rgba(247, 108, 198, 0.3)',
-                'rgba(84, 38, 215, 0.2)'
-              ]}
-              style={styles.gradientContainer}
-              start={{ x: 0.5, y: 0.5 }}
-              end={{ x: 1, y: 1 }}
+          <LinearGradient
+            colors={[
+              '#000000',
+              'rgba(247, 108, 198, 0.3)',
+              'rgba(84, 38, 215, 0.2)',
+              '#000000'
+            ]}
+            locations={[0, 0.4, 0.6, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.gradientContainer, {
+              borderRadius: 150,
+            }]}
+          >
+            <BlurView 
+              intensity={20}
+              tint='systemChromeMaterialDark'
+              style={styles.blurContainer}
             >
-              
               <VideoView
                 player={player}
                 style={styles.loadingAnimation}
               />
-
-            </LinearGradient> 
+            </BlurView>
+          </LinearGradient>
         </View>
         <Text style={[styles.title, Typography.largeTitle]}>Generating</Text>
         <Text style={[styles.subtitle, Typography.bodyRegular]}>It may take up to few minutes for you to recive an AI- generated speech. You can find your voice record in Library.</Text>
@@ -134,9 +145,19 @@ const styles = StyleSheet.create({
   gradientContainer: {
     width: '100%',
     height: '100%',
-    borderRadius: 150,
+    borderRadius: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  videoContainer: {
+    width: 200,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    overflow: 'hidden',
+    borderWidth: 5,
+    borderColor: SystemColors.black,
   },
   loadingAnimation: {
     width: 200,
@@ -154,5 +175,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
     textAlign: 'center',
     color: SystemColors.white_70,
+  },
+  blurContainer: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 150,
+    overflow: 'hidden',
   },
 }); 

@@ -18,6 +18,7 @@ export default function MusicGenerator() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [prompt, setPrompt] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   /**
    * Sayfa yüklendiğinde kategorileri ve sesleri yükler
@@ -56,25 +57,28 @@ export default function MusicGenerator() {
 
   /**
    * Devam et butonuna tıklandığında generating sayfasına yönlendirir
-   * - Prompt ve ses seçili değilse çalışmaz
-   * - Seçili sesin imageUrl'ini encode eder
-   * - Router ile generating sayfasına gerekli parametreleri gönderir
    */
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!prompt || !selectedVoice) return;
     
-    const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
-    const encodedImageUrl = encodeURIComponent(selectedVoiceObject?.imageUrl || '');
+    try {
+      const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
+      if (!selectedVoiceObject) return;
 
-    router.push({
-      pathname: "/generating",
-      params: { 
-        prompt,
-        voice: selectedVoice,
-        category: selectedCategory !== 'All' ? selectedCategory : '',
-        imageUrl: encodedImageUrl
-      }
-    });
+      const encodedImageUrl = encodeURIComponent(selectedVoiceObject.imageUrl);
+
+      await router.push({
+        pathname: "/generating",
+        params: { 
+          prompt,
+          voice: selectedVoice,
+          category: selectedCategory !== 'All' ? selectedCategory : '',
+          imageUrl: encodedImageUrl
+        }
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
   };
 
   return (
@@ -177,7 +181,7 @@ export default function MusicGenerator() {
 
       <TouchableOpacity 
         onPress={handleContinue}
-        disabled={!prompt || !selectedVoice}
+        disabled={!prompt || !selectedVoice || isNavigating}
         activeOpacity={0.95}
       >
         <LinearGradient
