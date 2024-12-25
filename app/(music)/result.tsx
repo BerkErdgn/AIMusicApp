@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, Platform, ScrollView, Share, Modal, Alert, ToastAndroid } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, Platform, ScrollView, Share, Modal, Alert, ToastAndroid, Linking } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SystemColors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -122,23 +122,30 @@ export default function ResultPage() {
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: (event) => {
+      if (!sound) return;
+      
       setIsSeeking(true);
       const { locationX } = event.nativeEvent;
-      const percentage = locationX / progressBarWidth;
-      const newPosition = percentage * duration;
+      // Mevcut pozisyonu koru ve sadece dokunulan noktaya göre ayarla
+      const containerX = event.nativeEvent.pageX - locationX;
+      const touchX = Math.max(0, Math.min(locationX, progressBarWidth));
+      const percentage = touchX / progressBarWidth;
+      const newPosition = Math.max(0, Math.min(percentage * duration, duration));
       setSeekPosition(newPosition);
     },
     onPanResponderMove: (event: GestureResponderEvent) => {
       if (!progressBarWidth) return;
       
-      const locationX = event.nativeEvent.pageX - event.nativeEvent.locationX + event.nativeEvent.locationX;
-      const percentage = Math.max(0, Math.min(locationX / progressBarWidth, 1));
-      const newSeekPosition = percentage * duration;
-      
-      setSeekPosition(newSeekPosition);
+      const { locationX, pageX } = event.nativeEvent;
+      const containerX = pageX - locationX;
+      const touchX = Math.max(0, Math.min(pageX - containerX, progressBarWidth));
+      const percentage = touchX / progressBarWidth;
+      const newPosition = Math.max(0, Math.min(percentage * duration, duration));
+      setSeekPosition(newPosition);
     },
     onPanResponderRelease: async () => {
       if (!sound) return;
+      
       await sound.setPositionAsync(seekPosition);
       setPosition(seekPosition);
       setIsSeeking(false);
@@ -208,25 +215,32 @@ export default function ResultPage() {
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please allow access to save the music');
+        Alert.alert(
+          'Permissions Required',
+          'Please allow storage access to save music to your device',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Settings', onPress: () => Linking.openSettings() }
+          ]
+        );
         return;
       }
 
-      const filename = `AI_Music_${Date.now()}.mp3`;
-      const downloadResumable = FileSystem.createDownloadResumable(
-        decodedResultUrl as string,
-        FileSystem.documentDirectory + filename
-      );
-
       Alert.alert('Downloading...', 'Please wait while we download your music');
 
-      const result = await downloadResumable.downloadAsync();
-      
-      if (result?.uri) {
-        const asset = await MediaLibrary.createAssetAsync(result.uri);
-        await MediaLibrary.createAlbumAsync('AI Music', asset, false);
-        
+      const filename = `AI_Music_${Date.now()}.mp3`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const { uri } = await FileSystem.downloadAsync(
+        decodedResultUrl as string,
+        fileUri
+      );
+
+      if (uri) {
+        // Sadece MediaLibrary'ye kaydet, albüm oluşturmaya çalışma
+        await MediaLibrary.createAssetAsync(uri);
         Alert.alert('Success', 'Music has been downloaded successfully!');
+        await FileSystem.deleteAsync(uri, { idempotent: true });
       }
 
     } catch (error) {
