@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, Platform, ScrollView, Share, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, Platform, ScrollView, Share, Modal, Alert, ToastAndroid } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SystemColors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -177,12 +177,24 @@ export default function ResultPage() {
   };
 
   /**
-   * Prompt metnini panoya kopyalar
+   * Prompt metnini panoya kopyalar ve bildirim gösterir
    * Copy Text menü öğesine tıklandığında çağrılır
    */
   const handleCopyText = async () => {
     await Clipboard.setStringAsync(params.prompt as string);
     setIsMenuVisible(false);
+    
+    // iOS için Alert, Android için Toast göster
+    if (Platform.OS === 'ios') {
+      Alert.alert('Copied', 'Text has been copied to clipboard', [
+        { text: 'OK', style: 'cancel' }
+      ], {
+        cancelable: true,
+        userInterfaceStyle: 'dark'
+      });
+    } else {
+      ToastAndroid.show('Text copied to clipboard', ToastAndroid.SHORT);
+    }
   };
 
   /**
