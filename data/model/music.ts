@@ -13,4 +13,14 @@ export interface Voice {
 
 export interface ApiResponse {
   objects: Voice[];
+}
+
+export interface GenerateMusicRequest {
+  prompt: string;
+  voice: string;
+  category: string;
+}
+
+export interface GenerateMusicResponse {
+  resultUrl: string;
 } 

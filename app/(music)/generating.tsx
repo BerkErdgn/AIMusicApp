@@ -5,56 +5,55 @@ import { Typography } from '../../constants/Typography';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import { generateMusic } from '../../data/api/music';
 
+/**
+ * Müzik oluşturma sayfası bileşeni
+ * Müzik oluşturma sürecini ve yükleme animasyonunu yönetir
+ */
 export default function GeneratingPage() {
   const { prompt, voice, category, imageUrl } = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * Sayfa yüklendiğinde müzik oluşturma işlemini başlatır
+   */
   useEffect(() => {
     handleGenerateMusic();
   }, []);
 
+  /**
+   * Geri butonuna basıldığında önceki sayfaya döner
+   */
   const handleClose = () => {
     router.back();
   };
 
-
+  /**
+   * Müzik oluşturma işlemini gerçekleştirir
+   * 1. Loading durumunu aktif eder
+   * 2. API'yi çağırır ve müzik oluşturur
+   * 3. Başarılı olursa result sayfasına yönlendirir
+   * 4. Hata durumunda console'a log atar
+   * 5. İşlem bitince loading durumunu kapatır
+   */
   const handleGenerateMusic = async () => {
     try {
-      const response = await fetch('https://us-central1-ai-video-40ecf.cloudfunctions.net/startMusicGenerate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt, voice, category })
+      setIsLoading(true);
+      const data = await generateMusic({ prompt, voice, category } as any);
+
+      const encodedResultUrl = encodeURIComponent(data.resultUrl);
+      const encodedImageUrl = encodeURIComponent(imageUrl as string);
+
+      router.replace({
+        pathname: "/result",
+        params: {
+          prompt,
+          voice,
+          imageUrl: encodedImageUrl,
+          resultUrl: encodedResultUrl
+        }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-
-        const encodedResultUrl = encodeURIComponent(data.resultUrl as string);
-        const encodedImageUrl = encodeURIComponent(imageUrl as string);
-
-        router.replace({
-          pathname: "/result",
-          params: {
-            prompt,
-            voice,
-            imageUrl: encodedImageUrl,
-            resultUrl: encodedResultUrl
-          }
-        });
-
-      } catch (e) {
-        console.error('Failed to parse response:', text);
-        throw new Error('Invalid response format');
-      }
     } catch (error) {
       console.error('Error generating music:', error);
     } finally {

@@ -1,4 +1,4 @@
-import { Category, Voice, ApiResponse } from '../model/music';
+import { Category, Voice, ApiResponse, GenerateMusicRequest, GenerateMusicResponse } from '../model/music';
 
 /**
  * Müzik kategorilerini ve sesleri getiren API fonksiyonu
@@ -44,5 +44,35 @@ export const fetchCategories = async (): Promise<{ categories: Category[], voice
       categories: [{ id: 'all', name: 'All', image: '' }],
       voices: []
     };
+  }
+};
+
+/**
+ * Müzik oluşturma API'sini çağırır
+ * 
+ * İşlevler:
+ * 1. API'ye prompt, voice ve category bilgilerini gönderir
+ * 2. Oluşturulan müziğin URL'ini döndürür
+ * 3. Hata durumunda error fırlatır
+ */
+export const generateMusic = async (params: GenerateMusicRequest): Promise<GenerateMusicResponse> => {
+  const response = await fetch('https://us-central1-ai-video-40ecf.cloudfunctions.net/startMusicGenerate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params)
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('Failed to parse response:', text);
+    throw new Error('Invalid response format');
   }
 }; 
