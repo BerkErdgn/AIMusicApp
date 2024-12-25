@@ -1,49 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Image,
-  SafeAreaView,
-  Platform,
-} from 'react-native';
+import {View,Text,TextInput,TouchableOpacity,ScrollView,StyleSheet,Image,SafeAreaView,Platform,} from 'react-native';
 import { router } from 'expo-router';
 import { SystemColors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '../hooks/useThemeColor';
+import { fetchCategories } from '../data/api/music';
+import { Category, Voice } from '../data/model/music';
+import { INSPIRATION_TEXTS } from '../data/inspiration_data/texts';
 
-interface Category {
-  id: string;
-  name: string;
-  image: string;
-}
 
-interface Voice {
-  imageUrl: string;
-  category: string;
-  order: number;
-  name: string;
-}
-
-interface ApiResponse {
-  objects: Voice[];
-}
-
-const INSPIRATION_TEXTS = [
-  "an atmospheric sleep soundscape with distant celestial melodies, creating a sense of floating in a calm night sky",
-  "a dreamy music box melody that transports listeners to a serene and restful dreamland",
-  "a calming meditation piece with the sounds of falling rain, distant thunder, and gentle wind chimes",
-  "an evolving ambient soundscape that progresses through the changing seasons, from the blossoming of spring to the hush of winter",
-  "a folk rock song that combines acoustic instruments with rock elements, telling a storytelling narrative",
-  "a progressive rock epic with intricate instrumental sections, dynamic shifts, and thought-provoking melodies",
-  "an orchestral overture reminiscent of the Classical era, featuring intricate orchestration and well-defined musical themes",
-  "a meditation ambience with soft, pulsating tones that guide the listener into a deep state of relaxation and inner reflection",
-  "a meditative drone piece that mirrors the rhythmic patterns of ocean waves, gradually building in intensity and subsiding like the tide"
-];
 
 export default function MusicGenerator() {
   const { theme, isDark } = useThemeColor();
@@ -53,52 +19,52 @@ export default function MusicGenerator() {
   const [prompt, setPrompt] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
 
+  /**
+   * Sayfa yüklendiğinde kategorileri ve sesleri yükler
+   * useEffect ile component mount olduğunda çağrılır
+   */
   useEffect(() => {
-    fetchCategories();
+    loadData();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('https://us-central1-ai-video-40ecf.cloudfunctions.net/getVoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      const data: ApiResponse = await response.json();
-      
-      // Extract unique categories and create category objects
-      const uniqueCategories = ['All', ...new Set(data.objects.map(item => item.category))];
-      const categoryObjects = uniqueCategories.map(category => ({
-        id: category.toLowerCase(),
-        name: category,
-        image: ''
-      }));
-
-      setCategories(categoryObjects);
-      setVoices(data.objects.sort((a, b) => a.order - b.order));
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      setCategories([{ id: 'all', name: 'All', image: '' }]);
-    }
+  /**
+   * API'den kategori ve ses verilerini çeker
+   * Başarılı olduğunda state'leri günceller
+   */
+  const loadData = async () => {
+    const { categories, voices } = await fetchCategories();
+    setCategories(categories);
+    setVoices(voices);
   };
 
-  // Filter voices based on selected category
+  /**
+   * Seçili kategoriye göre sesleri filtreler
+   * 'All' seçiliyse tüm sesleri, değilse sadece o kategorideki sesleri gösterir
+   */
   const filteredVoices = voices.filter(voice => 
     selectedCategory === 'All' || voice.category === selectedCategory
   );
 
+  /**
+   * İlham al butonuna tıklandığında rastgele bir metin seçer
+   * Seçilen metni prompt state'ine atar
+   */
   const handleInspirationClick = () => {
     const randomIndex = Math.floor(Math.random() * INSPIRATION_TEXTS.length);
     setPrompt(INSPIRATION_TEXTS[randomIndex]);
   };
 
+  /**
+   * Devam et butonuna tıklandığında generating sayfasına yönlendirir
+   * - Prompt ve ses seçili değilse çalışmaz
+   * - Seçili sesin imageUrl'ini encode eder
+   * - Router ile generating sayfasına gerekli parametreleri gönderir
+   */
   const handleContinue = () => {
     if (!prompt || !selectedVoice) return;
     
     const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
     const encodedImageUrl = encodeURIComponent(selectedVoiceObject?.imageUrl || '');
-    
 
     router.push({
       pathname: "/generating",

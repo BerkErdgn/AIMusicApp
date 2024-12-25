@@ -158,16 +158,20 @@ export default function ResultPage() {
   };
 
   /**
-   * Prompt metnini paylaşma işlemini gerçekleştirir
+   * Şarkıyı ve prompt metnini paylaşma işlemini gerçekleştirir
    * Share menü öğesine tıklandığında çağrılır
    */
   const handleShare = async () => {
     try {
+      // Şarkı URL'sini ve prompt'u paylaş
       await Share.share({
-        message: params.prompt as string,
+        message: `${params.prompt}\n\nListen to my AI generated music: ${decodedResultUrl}`,
+        url: decodedResultUrl as string, // iOS için
+        title: `AI Music by ${params.voice}` // Android için başlık
       });
     } catch (error) {
-      console.error(error);
+      console.error('Share error:', error);
+      Alert.alert('Error', 'Failed to share music');
     }
     setIsMenuVisible(false);
   };
