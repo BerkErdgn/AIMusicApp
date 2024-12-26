@@ -294,8 +294,9 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     borderRadius: 8,
+    paddingHorizontal: 17,
     backgroundColor: '#231E27',
-    padding: 12,
+    padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
