@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 
 const { width } = Dimensions.get('window');
 
@@ -187,12 +188,26 @@ export default function ResultPage() {
    */
   const handleShare = async () => {
     try {
-      // Şarkı URL'sini ve prompt'u paylaş
-      await Share.share({
-        message: `${params.prompt}\n\nListen to my AI generated music: ${decodedResultUrl}`,
-        url: decodedResultUrl as string, // iOS için
-        title: `AI Music by ${params.voice}` // Android için başlık
-      });
+      const filename = `AI_Music_${Date.now()}.mp3`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const { uri } = await FileSystem.downloadAsync(
+        decodedResultUrl as string,
+        fileUri
+      );
+
+      if (uri) {
+        // Dosyayı paylaş
+        const UTI = 'public.audio';
+        await Sharing.shareAsync(uri, {
+          mimeType: 'audio/mpeg',
+          dialogTitle: `AI Music by ${params.voice}`,
+          UTI: UTI
+        });
+
+        // Geçici dosyayı temizle
+        await FileSystem.deleteAsync(uri, { idempotent: true });
+      }
     } catch (error) {
       console.error('Share error:', error);
       Alert.alert('Error', 'Failed to share music');
