@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, Platform, ScrollView, Share, Modal, Alert, ToastAndroid, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, PanResponderGestureState, Platform, ScrollView, Share, Modal, Alert, ToastAndroid, Linking } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SystemColors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -118,37 +118,54 @@ export default function ResultPage() {
    * - Sürükleme hareketini takip eder
    * - Bırakıldığında yeni pozisyona atlar
    */
+  const handleProgressBarPress = async (event: GestureResponderEvent) => {
+    if (!sound || !progressBarWidth) return;
+
+    const { locationX } = event.nativeEvent;
+    const percentage = Math.max(0, Math.min(locationX / progressBarWidth, 1));
+    const newPosition = percentage * duration;
+
+    try {
+      await sound.setPositionAsync(newPosition);
+      setPosition(newPosition);
+    } catch (error) {
+      console.error('Progress bar press error:', error);
+    }
+  };
+
+  /**
+   * PanResponder'ı güncelleyelim
+   * - Dokunma başlangıcını yakalar
+   * - Sürükleme hareketini takip eder
+   * - Bırakıldığında yeni pozisyona atlar
+   */
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: (event) => {
+    onPanResponderGrant: async () => {
       if (!sound) return;
-      
       setIsSeeking(true);
-      const { locationX } = event.nativeEvent;
-      // Mevcut pozisyonu koru ve sadece dokunulan noktaya göre ayarla
-      const containerX = event.nativeEvent.pageX - locationX;
-      const touchX = Math.max(0, Math.min(locationX, progressBarWidth));
-      const percentage = touchX / progressBarWidth;
-      const newPosition = Math.max(0, Math.min(percentage * duration, duration));
-      setSeekPosition(newPosition);
     },
-    onPanResponderMove: (event: GestureResponderEvent) => {
+    onPanResponderMove: (event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
       if (!progressBarWidth) return;
       
-      const { locationX, pageX } = event.nativeEvent;
-      const containerX = pageX - locationX;
-      const touchX = Math.max(0, Math.min(pageX - containerX, progressBarWidth));
+      // Gesture state kullanarak daha doğru pozisyon hesaplama
+      const touchX = Math.max(0, Math.min(gestureState.moveX - 16, progressBarWidth));
       const percentage = touchX / progressBarWidth;
-      const newPosition = Math.max(0, Math.min(percentage * duration, duration));
+      const newPosition = percentage * duration;
       setSeekPosition(newPosition);
     },
     onPanResponderRelease: async () => {
       if (!sound) return;
       
-      await sound.setPositionAsync(seekPosition);
-      setPosition(seekPosition);
-      setIsSeeking(false);
+      try {
+        await sound.setPositionAsync(seekPosition);
+        setPosition(seekPosition);
+      } catch (error) {
+        console.error('Seeking error:', error);
+      } finally {
+        setIsSeeking(false);
+      }
     },
   });
 
@@ -292,8 +309,9 @@ export default function ResultPage() {
 
         <View style={styles.playerContainer}>
           <View style={styles.progressSection}>
-            <View 
+            <TouchableOpacity 
               style={styles.progressBar}
+              onPress={handleProgressBarPress}
               onLayout={(event) => {
                 setProgressBarWidth(event.nativeEvent.layout.width);
               }}
@@ -311,7 +329,7 @@ export default function ResultPage() {
                   { left: `${((isSeeking ? seekPosition : position) / duration) * 100}%` }
                 ]} 
               />
-            </View>
+            </TouchableOpacity>
             <View style={styles.timeContainer}>
               <Text style={styles.timeText}>
                 {formatTime(isSeeking ? seekPosition : position)}
@@ -495,11 +513,11 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressKnob: {
+    position: 'absolute',
     width: 12,
     height: 12,
     borderRadius: 6,
     backgroundColor: SystemColors.white,
-    position: 'absolute',
     top: -4,
     transform: [{ translateX: -6 }],
     shadowColor: "#000",
@@ -510,7 +528,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    zIndex: 2,
   },
   timeContainer: {
     flexDirection: 'row',

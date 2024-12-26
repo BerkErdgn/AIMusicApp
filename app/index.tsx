@@ -58,7 +58,7 @@ export default function MusicGenerator() {
   /**
    * Devam et butonuna tıklandığında generating sayfasına yönlendirir
    */
-  const handleContinue = async () => {
+  const handleContinue =  () => {
     if (!prompt || !selectedVoice) return;
     
     try {
@@ -67,7 +67,7 @@ export default function MusicGenerator() {
 
       const encodedImageUrl = encodeURIComponent(selectedVoiceObject.imageUrl);
 
-      await router.push({
+      router.push({
         pathname: "/generating",
         params: { 
           prompt,

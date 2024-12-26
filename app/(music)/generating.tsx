@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { generateMusic } from '../../data/api/music';
 import { BlurView } from 'expo-blur';
+import { Canvas, Circle, RadialGradient, Rect, vec } from "@shopify/react-native-skia";
 
 
 /**
@@ -81,34 +82,34 @@ export default function GeneratingPage() {
 
       <View style={styles.content}>
         <View style={styles.animationContainer}>
-          <LinearGradient
-            colors={[
-              '#000000',
-              'rgba(247, 108, 198, 0.3)',
-              'rgba(84, 38, 215, 0.2)',
-              '#000000'
-            ]}
-            locations={[0, 0.4, 0.6, 1]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.gradientContainer, {
-              borderRadius: 150,
-            }]}
-          >
-            <BlurView 
-              intensity={20}
-              tint='systemChromeMaterialDark'
-              style={styles.blurContainer}
-            >
-              <VideoView
-                player={player}
-                style={styles.loadingAnimation}
+        <Canvas style={styles.gradientContainer}>
+          <Circle cx={150} cy={150} r={150}>
+              <RadialGradient
+                c={vec(150, 150)}
+                r={200}
+                colors={[
+                  'rgba(247, 108, 198, 0.3)',
+                  'rgba(84, 38, 215, 0.2)',
+                ]}
+                positions={[0.2, 0.4, 0.7, 1]}
               />
-            </BlurView>
-          </LinearGradient>
+            </Circle>
+          </Canvas>
+          <BlurView 
+            intensity={0}
+            tint='systemChromeMaterialDark'
+            style={styles.blurContainer}
+          >
+            <VideoView
+              player={player}
+              style={styles.loadingAnimation}
+            />
+          </BlurView>
         </View>
         <Text style={[styles.title, Typography.largeTitle]}>Generating</Text>
-        <Text style={[styles.subtitle, Typography.bodyRegular]}>It may take up to few minutes for you to recive an AI- generated speech. You can find your voice record in Library.</Text>
+        <Text style={[styles.subtitle, Typography.bodyRegular]}>
+          It may take up to few minutes for you to recive an AI- generated speech. You can find your voice record in Library.
+        </Text>
       </View>
     </View>
   );
@@ -143,21 +144,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   gradientContainer: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  videoContainer: {
-    width: 200,
-    height: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 100,
-    overflow: 'hidden',
-    borderWidth: 5,
-    borderColor: SystemColors.black,
+    width: 300,
+    height: 300,
+    position: 'absolute',
   },
   loadingAnimation: {
     width: 200,
@@ -181,7 +170,6 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 150,
     overflow: 'hidden',
   },
 }); 
