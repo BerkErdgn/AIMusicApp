@@ -60,10 +60,9 @@ export default function MusicGenerator() {
    * Devam et butonuna tıklandığında generating sayfasına yönlendirir
    */
   const handleContinue = async () => {
-    if (!prompt || !selectedVoice || isLoading) return;
+    if (!prompt || !selectedVoice) return;
     
     try {
-      setIsLoading(true);
       const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
       if (!selectedVoiceObject) return;
 
@@ -80,8 +79,6 @@ export default function MusicGenerator() {
       });
     } catch (error) {
       console.error('Navigation error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -198,14 +195,13 @@ export default function MusicGenerator() {
 
       <TouchableOpacity 
         onPress={handleContinue}
-        disabled={!prompt || !selectedVoice || isLoading}
+        disabled={!prompt || !selectedVoice}
         activeOpacity={0.8}
-        style={{ opacity: isLoading ? 0.7 : 1 }}
       >
         <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-          colors={(!prompt || !selectedVoice || isLoading) 
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          colors={(!prompt || !selectedVoice) 
             ? ['#4A203B', '#4A203B'] 
             : [...SystemColors.linearGradient]}
           style={styles.generateButton}
@@ -213,9 +209,9 @@ export default function MusicGenerator() {
           <Text style={[
             styles.generateText, 
             Typography.bodyBold,
-            (!prompt || !selectedVoice || isLoading) && { color: SystemColors.white_50 }
+            (!prompt || !selectedVoice) && { color: SystemColors.white_50 }
           ]}>
-            {isLoading ? 'Please wait...' : 'Continue'}
+            Continue
           </Text>
         </LinearGradient>
       </TouchableOpacity>
