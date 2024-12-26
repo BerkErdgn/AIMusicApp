@@ -19,6 +19,7 @@ export default function MusicGenerator() {
   const [prompt, setPrompt] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   /**
    * Sayfa yüklendiğinde kategorileri ve sesleri yükler
@@ -58,10 +59,11 @@ export default function MusicGenerator() {
   /**
    * Devam et butonuna tıklandığında generating sayfasına yönlendirir
    */
-  const handleContinue =  () => {
-    if (!prompt || !selectedVoice) return;
+  const handleContinue = async () => {
+    if (!prompt || !selectedVoice || isLoading) return;
     
     try {
+      setIsLoading(true);
       const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
       if (!selectedVoiceObject) return;
 
@@ -78,6 +80,8 @@ export default function MusicGenerator() {
       });
     } catch (error) {
       console.error('Navigation error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,19 +90,30 @@ export default function MusicGenerator() {
       <Text style={styles.headerText}>AI Voice</Text>
       <View style={[styles.inputContainer]}>
         <TextInput
-          style={[styles.input, Typography.caption2, { color: theme.text }]}
+          style={[styles.input, Typography.bodyRegular, { color: theme.text }]}
           placeholder="Write a text and let AI turn it into a speech with the voice of your favorite character"
           placeholderTextColor={isDark ? SystemColors.white_50 : SystemColors.gray}
           multiline
           value={prompt}
           onChangeText={setPrompt}
         />
+        {prompt.length > 0 && (
+          <TouchableOpacity 
+            style={styles.clearButton}
+            onPress={() => setPrompt('')}
+          >
+            <Image 
+              source={require('../assets/icons/closeIcon.png')}
+              style={styles.clearIcon}
+            />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity 
           style={styles.inspirationButton}
           onPress={handleInspirationClick}
         >
           <View style={styles.inspirationContent}>
-            <Text style={styles.inspirationText}>
+            <Text style={[styles.inspirationText, Typography.bodyRegular]}>
               Get inspiration
             </Text>
             <Image 
@@ -109,7 +124,7 @@ export default function MusicGenerator() {
         </TouchableOpacity>
       </View>
 
-      <Text style={[styles.title, Typography.largeTitle, { color: theme.text }]}>
+      <Text style={[styles.title, Typography.title2, { color: theme.text }]}>
         Pick a Voice
       </Text>
       
@@ -151,11 +166,13 @@ export default function MusicGenerator() {
               style={[
                 styles.voiceItem,
                 { backgroundColor: isDark ? SystemColors.black : SystemColors.white_85 },
-                
               ]}
               onPress={() => setSelectedVoice(voice.name)}
             >
-              <View style={[styles.imageContainer,selectedVoice === voice.name && styles.selectedVoiceItem]}>
+              <View style={[
+                styles.imageContainer,
+                { borderWidth: 1, borderColor: selectedVoice === voice.name ? '#F76CC6' : 'transparent' }
+              ]}>
                 <Image
                   source={{ uri: voice.imageUrl }}
                   style={styles.voiceImage}
@@ -181,19 +198,24 @@ export default function MusicGenerator() {
 
       <TouchableOpacity 
         onPress={handleContinue}
-        disabled={!prompt || !selectedVoice || isNavigating}
-        activeOpacity={0.95}
+        disabled={!prompt || !selectedVoice || isLoading}
+        activeOpacity={0.8}
+        style={{ opacity: isLoading ? 0.7 : 1 }}
       >
         <LinearGradient
-          colors={(!prompt || !selectedVoice) ? ['#4A203B', '#4A203B'] : [...SystemColors.linearGradient] as const}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+          colors={(!prompt || !selectedVoice || isLoading) 
+            ? ['#4A203B', '#4A203B'] 
+            : [...SystemColors.linearGradient]}
           style={styles.generateButton}
         >
           <Text style={[
             styles.generateText, 
             Typography.bodyBold,
-            (!prompt || !selectedVoice) && { color: SystemColors.white_50 }
+            (!prompt || !selectedVoice || isLoading) && { color: SystemColors.white_50 }
           ]}>
-            Continue
+            {isLoading ? 'Please wait...' : 'Continue'}
           </Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -220,8 +242,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     borderRadius: 12,
     padding: 16,
-    backgroundColor:"#231E27",
+    backgroundColor: "#231E27",
     marginBottom: 24,
+    position: 'relative',
   },
   input: {
     marginLeft: 8,
@@ -250,8 +273,6 @@ const styles = StyleSheet.create({
   inspirationText: {
     color: SystemColors.primaryColor1,
     fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'System',
-    fontSize: 15,
-    fontWeight: '600',
     lineHeight: 20,
     textAlign: 'left',
     textDecorationLine: 'underline',
@@ -305,7 +326,7 @@ const styles = StyleSheet.create({
   },
   voicesContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     marginBottom: 0,
   },
   voicesGrid: {
@@ -348,11 +369,6 @@ const styles = StyleSheet.create({
   categoriesScrollView: {
     flexGrow: 0,
   },
-  selectedVoiceItem: {
-    borderWidth: 1,
-    borderRadius: 8,
-    borderColor: '#F76CC6',
-  },
   voiceSelectedOverlay: {
     position: 'absolute',
     top: 0,
@@ -367,5 +383,17 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     opacity: 1,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    padding: 8,
+    zIndex: 1,
+  },
+  clearIcon: {
+    width: 12,
+    height: 12,
+    tintColor: SystemColors.white_50,
   },
 }); 

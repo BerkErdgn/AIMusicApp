@@ -457,21 +457,22 @@ const styles = StyleSheet.create({
     right: 12,
     bottom: 12,
     backgroundColor: '#F76CC6CC',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   loopBadgeActive: {
-    borderWidth: 1,
     borderColor: '#F76CC6',
     backgroundColor: '#F76CC6CC',
   },
   replayIcon: {
-    width: 12,
-    height: 12,
+    width: 14,
+    height: 14,
     tintColor: SystemColors.white_50,
   },
   replayIconActive: {
@@ -479,7 +480,8 @@ const styles = StyleSheet.create({
   },
   loopText: {
     color: SystemColors.white_50,
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: '500',
   },
   loopTextActive: {
     color: SystemColors.white,
@@ -577,7 +579,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   promptText: {
-    color: SystemColors.white_70,
+    color: SystemColors.white,
     fontFamily: Platform.OS === 'ios' ? 'SF Pro Display' : 'System',
     fontSize: 13,
     fontWeight: '400',
