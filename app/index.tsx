@@ -59,23 +59,22 @@ export default function MusicGenerator() {
   /**
    * Devam et butonuna tıklandığında generating sayfasına yönlendirir
    */
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!prompt || !selectedVoice) return;
-    
+    setIsLoading(true);
     const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
-    if (!selectedVoiceObject) return;
-
-    const encodedImageUrl = encodeURIComponent(selectedVoiceObject.imageUrl);
-
-    router.push({
+    const encodedImageUrl = encodeURIComponent(selectedVoiceObject?.imageUrl || '');
+    setIsLoading(false);
+    await router.push({
       pathname: "/generating",
       params: { 
         prompt,
         voice: selectedVoice,
-        category: selectedCategory !== 'All' ? selectedCategory : '',
+        category: selectedCategory,
         imageUrl: encodedImageUrl
       }
     });
+
   };
 
   return (
@@ -207,7 +206,7 @@ export default function MusicGenerator() {
             Typography.bodyBold,
             (!prompt || !selectedVoice) && { color: SystemColors.white_50 }
           ]}>
-            Continue
+            {isLoading ? 'Please wait...' : 'Continue'}
           </Text>
         </LinearGradient>
       </TouchableOpacity>
