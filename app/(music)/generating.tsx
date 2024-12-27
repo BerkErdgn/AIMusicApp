@@ -64,8 +64,7 @@ export default function GeneratingPage() {
     }
   };
 
-  const videoSource = 'https://s3-figma-videos-production-sig.figma.com/video/969933023608660558/TEAM/bf4a/db11/-514d-4c6d-876d-a4d3930d3c80?Expires=1736121600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=LIrAd9RMJSMOnm3ck4zaaNlHRc5A5NfBsI9gzHWGI6yNEXQtdZZg7nawGeuj-mXOXI1daR8zTcQO63t1RZeyKPeCuGDEgmk9BNPC23fIuz2RumA8OuYMvOA6vqEllCcMyYg1slSg5Y-mhMIgdxT0PJfRbstdQ7myTbIEyJzhJ7gjUEf3zjKK1cUnODxvWz6UuUW1RnVqb9UGJUgZ6m1y7oeHQObn-jVp84ZFpAjA8CLYPWTkoYgJh7zVleP4TNtPDQOFz2c41wGxwTZPQaDgqIJQHnfskn8GPrQpIM-05k0jsedwTW11RORybUHRpSLoReBcBjOMFA5Gv7SkD4sv5g__'
-
+  const videoSource = require('../../assets/videos/generatingAnimation.mp4')
   const player = useVideoPlayer(videoSource, player => {
     player.loop = true;
     player.play()

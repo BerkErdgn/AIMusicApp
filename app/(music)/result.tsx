@@ -68,10 +68,8 @@ export default function ResultPage() {
       setPosition(status.positionMillis || 0);
       setIsPlaying(status.isPlaying);
 
-      if (status.didJustFinish) {
-        await sound?.pauseAsync();
-        await sound?.setPositionAsync(0);
-        setPosition(0);
+      // Şarkı bitti ve loop kapalıysa
+      if (status.didJustFinish && !isLooping) {
         setIsPlaying(false);
       }
     }
@@ -84,10 +82,19 @@ export default function ResultPage() {
   const handlePlayPause = async () => {
     if (!sound) return;
 
-    if (isPlaying) {
-      await sound.pauseAsync();
-    } else {
-      await sound.playAsync();
+    try {
+      if (isPlaying) {
+        await sound.pauseAsync();
+      } else {
+        // Şarkı bitmişse veya sondaysa
+        if (position >= duration - 100) {
+          await sound.setPositionAsync(0);
+        }
+        await sound.playAsync();
+      }
+    } catch (error) {
+      console.error('Play/Pause error:', error);
+      await loadAudio();
     }
   };
 
@@ -110,7 +117,7 @@ export default function ResultPage() {
       await sound.stopAsync();
       await sound.unloadAsync();
     }
-    router.replace('/');
+    router.back()
   };
 
   /**
@@ -177,9 +184,13 @@ export default function ResultPage() {
   const handleLoopToggle = async () => {
     if (!sound) return;
     
-    const newLoopValue = !isLooping;
-    await sound.setIsLoopingAsync(newLoopValue);
-    setIsLooping(newLoopValue);
+    try {
+      const newLoopValue = !isLooping;
+      await sound.setIsLoopingAsync(newLoopValue);
+      setIsLooping(newLoopValue);
+    } catch (error) {
+      console.error('Loop toggle error:', error);
+    }
   };
 
   /**
