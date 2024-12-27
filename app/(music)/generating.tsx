@@ -5,7 +5,7 @@ import { Typography } from '../../constants/Typography';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { generateMusic } from '../../data/api/music';
+import { generateMusic } from '../../data/api/musicAPI';
 import { BlurView } from 'expo-blur';
 import { Canvas, Circle, RadialGradient, Rect, vec } from "@shopify/react-native-skia";
 

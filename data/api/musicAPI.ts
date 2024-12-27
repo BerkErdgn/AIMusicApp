@@ -1,4 +1,4 @@
-import { Category, Voice, ApiResponse, GenerateMusicRequest, GenerateMusicResponse } from '../model/music';
+import { Category, Voice, ApiResponse, GenerateMusicRequest, GenerateMusicResponse } from '../model/musicModel';
 
 /**
  * Müzik kategorilerini ve sesleri getiren API fonksiyonu

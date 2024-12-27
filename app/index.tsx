@@ -5,8 +5,8 @@ import { SystemColors } from '../constants/Colors';
 import { Typography } from '../constants/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '../hooks/useThemeColor';
-import { fetchCategories } from '../data/api/music';
-import { Category, Voice } from '../data/model/music';
+import { fetchCategories } from '../data/api/musicAPI';
+import { Category, Voice } from '../data/model/musicModel';
 import { INSPIRATION_TEXTS } from '../data/inspiration_data/texts';
 
 
@@ -59,27 +59,23 @@ export default function MusicGenerator() {
   /**
    * Devam et butonuna tıklandığında generating sayfasına yönlendirir
    */
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!prompt || !selectedVoice) return;
     
-    try {
-      const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
-      if (!selectedVoiceObject) return;
+    const selectedVoiceObject = voices.find(voice => voice.name === selectedVoice);
+    if (!selectedVoiceObject) return;
 
-      const encodedImageUrl = encodeURIComponent(selectedVoiceObject.imageUrl);
+    const encodedImageUrl = encodeURIComponent(selectedVoiceObject.imageUrl);
 
-      router.push({
-        pathname: "/generating",
-        params: { 
-          prompt,
-          voice: selectedVoice,
-          category: selectedCategory !== 'All' ? selectedCategory : '',
-          imageUrl: encodedImageUrl
-        }
-      });
-    } catch (error) {
-      console.error('Navigation error:', error);
-    }
+    router.push({
+      pathname: "/generating",
+      params: { 
+        prompt,
+        voice: selectedVoice,
+        category: selectedCategory !== 'All' ? selectedCategory : '',
+        imageUrl: encodedImageUrl
+      }
+    });
   };
 
   return (
@@ -280,6 +276,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 16,
+    marginLeft: 4,
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -312,10 +309,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    marginTop: 'auto',
+    marginBottom: 0,
     overflow: 'hidden',
   },
   generateText: {
@@ -323,13 +318,13 @@ const styles = StyleSheet.create({
   },
   voicesContainer: {
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 4,
     marginBottom: 0,
   },
   voicesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   voiceItem: {
     width: '31%',
