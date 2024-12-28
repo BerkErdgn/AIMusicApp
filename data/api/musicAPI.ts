@@ -1,18 +1,17 @@
 import { Category, Voice, ApiResponse, GenerateMusicRequest, GenerateMusicResponse } from '../model/musicModel';
 
 /**
- * Müzik kategorilerini ve sesleri getiren API fonksiyonu
+ * API function to fetch music categories and voices
  * 
- * - categories: Tüm kategorileri içeren dizi ('All' kategorisi dahil)
- * - voices: Sıralanmış ses listesi
+ * - categories: Array containing all categories (including 'All')
+ * - voices: Sorted list of voices
  * 
- * İşlevler:
- * 1. API'ye POST isteği gönderir
- * 2. Gelen verideki benzersiz kategorileri çıkarır
- * 3. 'All' kategorisini ekler
- * 4. Sesleri order'a göre sıralar
- * 5. Hata durumunda varsayılan değerler döndürür
- * 
+ * Functions:
+ * 1. Sends POST request to API
+ * 2. Extracts unique categories from response
+ * 3. Adds 'All' category
+ * 4. Sorts voices by order
+ * 5. Returns default values in case of error
  */
 export const fetchCategories = async (): Promise<{ categories: Category[], voices: Voice[] }> => {
   try {
@@ -48,12 +47,12 @@ export const fetchCategories = async (): Promise<{ categories: Category[], voice
 };
 
 /**
- * Müzik oluşturma API'sini çağırır
+ * Calls the music generation API
  * 
- * İşlevler:
- * 1. API'ye prompt, voice ve category bilgilerini gönderir
- * 2. Oluşturulan müziğin URL'ini döndürür
- * 3. Hata durumunda error fırlatır
+ * Functions:
+ * 1. Sends prompt, voice and category data to API
+ * 2. Returns URL of generated music
+ * 3. Throws error if request fails
  */
 export const generateMusic = async (params: GenerateMusicRequest): Promise<GenerateMusicResponse> => {
   const response = await fetch('https://us-central1-ai-video-40ecf.cloudfunctions.net/startMusicGenerate', {

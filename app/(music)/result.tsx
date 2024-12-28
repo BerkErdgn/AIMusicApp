@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, PanResponderGestureState, Platform, ScrollView, Share, Modal, Alert, ToastAndroid, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, PanResponder, GestureResponderEvent, PanResponderGestureState, Platform, ScrollView, Alert, ToastAndroid, Modal } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SystemColors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
@@ -9,6 +9,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
+import * as Linking from 'expo-linking';
 
 const { width } = Dimensions.get('window');
 
@@ -39,8 +40,8 @@ export default function ResultPage() {
   }, []);
 
   /**
-   * Ses dosyasını yükler ve oynatıcıyı hazırlar
-   * Sayfa açıldığında otomatik olarak çağrılır
+   * Loads the audio file and prepares the player
+   * Called automatically when the page loads
    */
   const loadAudio = async () => {
     try {
@@ -56,11 +57,11 @@ export default function ResultPage() {
   };
 
   /**
-   * Ses çalma durumunu takip eder ve günceller
-   * - Süreyi günceller
-   * - Pozisyonu günceller
-   * - Oynatma durumunu günceller
-   * - Şarkı bittiğinde başa sarar
+   * Tracks and updates the playback status
+   * - Updates duration
+   * - Updates position
+   * - Updates playing state
+   * - Handles track completion
    */
   const onPlaybackStatusUpdate = async (status: any) => {
     if (status.isLoaded) {
@@ -68,7 +69,7 @@ export default function ResultPage() {
       setPosition(status.positionMillis || 0);
       setIsPlaying(status.isPlaying);
 
-      // Şarkı bitti ve loop kapalıysa
+      // If track finished and not looping
       if (status.didJustFinish && !isLooping) {
         setIsPlaying(false);
       }
@@ -76,8 +77,8 @@ export default function ResultPage() {
   };
 
   /**
-   * Sesi oynatır veya duraklatır
-   * Play/Pause butonuna basıldığında çağrılır
+   * Handles play/pause functionality
+   * Called when the play/pause button is pressed
    */
   const handlePlayPause = async () => {
     if (!sound) return;
@@ -86,7 +87,7 @@ export default function ResultPage() {
       if (isPlaying) {
         await sound.pauseAsync();
       } else {
-        // Şarkı bitmişse veya sondaysa
+        // If track is finished or near the end
         if (position >= duration - 100) {
           await sound.setPositionAsync(0);
         }
@@ -99,8 +100,8 @@ export default function ResultPage() {
   };
 
   /**
-   * Milisaniye cinsinden süreyi "dakika:saniye" formatına dönüştürür
-   * Örnek: 61000ms -> "1:01"
+   * Converts milliseconds to "minutes:seconds" format
+   * Example: 61000ms -> "1:01"
    */
   const formatTime = (millis: number) => {
     const minutes = Math.floor(millis / 60000);
@@ -109,22 +110,22 @@ export default function ResultPage() {
   };
 
   /**
-   * Sayfadan çıkış yapar ve sesi temizler
-   * Geri butonuna basıldığında çağrılır
+   * Handles closing the page and cleaning up audio
+   * Called when the back button is pressed
    */
   const handleClose = async () => {
     if (sound) {
       await sound.stopAsync();
       await sound.unloadAsync();
     }
-    router.back()
+    router.back();
   };
 
   /**
-   * Progress bar üzerinde dokunma ve sürükleme işlemlerini yönetir
-   * - Dokunma başlangıcını yakalar
-   * - Sürükleme hareketini takip eder
-   * - Bırakıldığında yeni pozisyona atlar
+   * Handles progress bar touch and drag operations
+   * - Captures touch start
+   * - Tracks drag movement
+   * - Jumps to new position on release
    */
   const handleProgressBarPress = async (event: GestureResponderEvent) => {
     if (!sound || !progressBarWidth) return;
@@ -142,10 +143,10 @@ export default function ResultPage() {
   };
 
   /**
-   * PanResponder'ı güncelleyelim
-   * - Dokunma başlangıcını yakalar
-   * - Sürükleme hareketini takip eder
-   * - Bırakıldığında yeni pozisyona atlar
+   * Updates PanResponder
+   * - Captures touch start
+   * - Tracks drag movement
+   * - Jumps to new position on release
    */
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -157,7 +158,7 @@ export default function ResultPage() {
     onPanResponderMove: (event: GestureResponderEvent, gestureState: PanResponderGestureState) => {
       if (!progressBarWidth) return;
       
-      // Gesture state kullanarak daha doğru pozisyon hesaplama
+      // Calculate more accurate position using gesture state
       const touchX = Math.max(0, Math.min(gestureState.moveX - 16, progressBarWidth));
       const percentage = touchX / progressBarWidth;
       const newPosition = percentage * duration;
@@ -178,8 +179,8 @@ export default function ResultPage() {
   });
 
   /**
-   * Döngü modunu açıp kapatır
-   * Loop butonuna basıldığında çağrılır
+   * Toggles loop mode on/off
+   * Called when the loop button is pressed
    */
   const handleLoopToggle = async () => {
     if (!sound) return;
@@ -194,8 +195,8 @@ export default function ResultPage() {
   };
 
   /**
-   * Şarkıyı ve prompt metnini paylaşma işlemini gerçekleştirir
-   * Share menü öğesine tıklandığında çağrılır
+   * Handles sharing the song and prompt text
+   * Called when the Share menu item is clicked
    */
   const handleShare = async () => {
     try {
@@ -208,7 +209,7 @@ export default function ResultPage() {
       );
 
       if (uri) {
-        // Dosyayı paylaş
+        // Share the file
         const UTI = 'public.audio';
         await Sharing.shareAsync(uri, {
           mimeType: 'audio/mpeg',
@@ -216,7 +217,7 @@ export default function ResultPage() {
           UTI: UTI
         });
 
-        // Geçici dosyayı temizle
+        // Clean up temporary file
         await FileSystem.deleteAsync(uri, { idempotent: true });
       }
     } catch (error) {
@@ -227,14 +228,14 @@ export default function ResultPage() {
   };
 
   /**
-   * Prompt metnini panoya kopyalar ve bildirim gösterir
-   * Copy Text menü öğesine tıklandığında çağrılır
+   * Copies prompt text to clipboard and shows notification
+   * Called when the Copy Text menu item is clicked
    */
   const handleCopyText = async () => {
     await Clipboard.setStringAsync(params.prompt as string);
     setIsMenuVisible(false);
     
-    // iOS için Alert, Android için Toast göster
+    // Show Alert for iOS, Toast for Android
     if (Platform.OS === 'ios') {
       Alert.alert('Copied', 'Text has been copied to clipboard', [
         { text: 'OK', style: 'cancel' }
@@ -248,11 +249,11 @@ export default function ResultPage() {
   };
 
   /**
-   * Müziği cihaza indirme işlemini gerçekleştirir
-   * - İzinleri kontrol eder
-   * - Dosyayı indirir
-   * - Medya kütüphanesine kaydeder
-   * Download butonuna basıldığında çağrılır
+   * Handles downloading music to device
+   * - Checks permissions
+   * - Downloads file
+   * - Saves to media library
+   * Called when the Download button is pressed
    */
   const handleDownload = async () => {
     try {
@@ -280,7 +281,7 @@ export default function ResultPage() {
       );
 
       if (uri) {
-        // Sadece MediaLibrary'ye kaydet, albüm oluşturmaya çalışma
+        // Save to MediaLibrary only, don't create album
         await MediaLibrary.createAssetAsync(uri);
         Alert.alert('Success', 'Music has been downloaded successfully!');
         await FileSystem.deleteAsync(uri, { idempotent: true });

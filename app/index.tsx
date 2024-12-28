@@ -9,8 +9,6 @@ import { fetchCategories } from '../data/api/musicAPI';
 import { Category, Voice } from '../data/model/musicModel';
 import { INSPIRATION_TEXTS } from '../data/inspiration_data/texts';
 
-
-
 export default function MusicGenerator() {
   const { theme, isDark } = useThemeColor();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -18,20 +16,19 @@ export default function MusicGenerator() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [prompt, setPrompt] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   /**
-   * Sayfa yüklendiğinde kategorileri ve sesleri yükler
-   * useEffect ile component mount olduğunda çağrılır
+   * Loads categories and voices when the page loads
+   * Called via useEffect when component mounts
    */
   useEffect(() => {
     loadData();
   }, []);
 
   /**
-   * API'den kategori ve ses verilerini çeker
-   * Başarılı olduğunda state'leri günceller
+   * Fetches category and voice data from API
+   * Updates states when successful
    */
   const loadData = async () => {
     const { categories, voices } = await fetchCategories();
@@ -40,16 +37,16 @@ export default function MusicGenerator() {
   };
 
   /**
-   * Seçili kategoriye göre sesleri filtreler
-   * 'All' seçiliyse tüm sesleri, değilse sadece o kategorideki sesleri gösterir
+   * Filters voices based on selected category
+   * Shows all voices if 'All' is selected, otherwise shows only voices in that category
    */
   const filteredVoices = voices.filter(voice => 
     selectedCategory === 'All' || voice.category === selectedCategory
   );
 
   /**
-   * İlham al butonuna tıklandığında rastgele bir metin seçer
-   * Seçilen metni prompt state'ine atar
+   * Handles inspiration button click
+   * Selects a random text from inspiration texts and sets it as prompt
    */
   const handleInspirationClick = () => {
     const randomIndex = Math.floor(Math.random() * INSPIRATION_TEXTS.length);
@@ -57,7 +54,8 @@ export default function MusicGenerator() {
   };
 
   /**
-   * Devam et butonuna tıklandığında generating sayfasına yönlendirir
+   * Handles continue button click
+   * Navigates to generating page with selected parameters
    */
   const handleContinue = async () => {
     if (!prompt || !selectedVoice) return;
@@ -74,7 +72,6 @@ export default function MusicGenerator() {
         imageUrl: encodedImageUrl
       }
     });
-
   };
 
   return (

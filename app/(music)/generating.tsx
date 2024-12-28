@@ -4,41 +4,41 @@ import { SystemColors } from '../../constants/Colors';
 import { Typography } from '../../constants/Typography';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useState, useEffect } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { generateMusic } from '../../data/api/musicAPI';
 import { BlurView } from 'expo-blur';
-import { Canvas, Circle, RadialGradient, Rect, vec } from "@shopify/react-native-skia";
-
+import { Canvas, Circle, RadialGradient, vec } from "@shopify/react-native-skia";
 
 /**
- * Müzik oluşturma sayfası bileşeni
- * Müzik oluşturma sürecini ve yükleme animasyonunu yönetir
+ * Music Generation Page Component
+ * Manages music generation process and loading animation
  */
 export default function GeneratingPage() {
   const { prompt, voice, category, imageUrl } = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(true);
 
   /**
-   * Sayfa yüklendiğinde müzik oluşturma işlemini başlatır
+   * Starts music generation when page loads
+   * Called via useEffect when component mounts
    */
   useEffect(() => {
     handleGenerateMusic();
   }, []);
 
   /**
-   * Geri butonuna basıldığında önceki sayfaya döner
+   * Handles back button press
+   * Returns to previous page
    */
   const handleClose = () => {
     router.back();
   };
 
   /**
-   * Müzik oluşturma işlemini gerçekleştirir
-   * 1. Loading durumunu aktif eder
-   * 2. API'yi çağırır ve müzik oluşturur
-   * 3. Başarılı olursa result sayfasına yönlendirir
-   * 4. Hata durumunda console'a log atar
-   * 5. İşlem bitince loading durumunu kapatır
+   * Handles music generation process
+   * 1. Sets loading state
+   * 2. Calls API to generate music
+   * 3. Navigates to result page on success
+   * 4. Logs error if fails
+   * 5. Updates loading state when complete
    */
   const handleGenerateMusic = async () => {
     try {
